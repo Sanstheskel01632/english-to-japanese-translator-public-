@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>English to Japanese Translator</title>
+  <style>
+    /* Embedded CSS here */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 1.5rem;
+      display: block;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      margin-top: 0.3rem;
+      resize: vertical;
+      background-color: #fff;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    textarea:focus {
+      border-color: #007acc;
+      outline: none;
+    }
+
+    label + textarea {
+      margin-bottom: 1rem;
+    }
+
+    button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      cursor: pointer;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background: #005f99;
+    }
+  </style>
+</head>
+<body>
+  <h1>English to Japanese Translator</h1>
+
+  <textarea id="englishInput" rows="3" placeholder="Type English here..."></textarea>
+  <button onclick="translateText()">Translate</button>
+
+  <label for="kanjiOutput">Japanese (Kanji + Hiragana):</label>
+  <textarea readonly id="kanjiOutput" rows="2"></textarea>
+
+  <label for="hiraganaOutput">Hiragana Only:</label>
+  <textarea readonly id="hiraganaOutput" rows="2"></textarea>
+
+  <label for="katakanaOutput">Katakana:</label>
+  <textarea readonly id="katakanaOutput" rows="2"></textarea>
+
+  <label for="romajiOutput">Romaji:</label>
+  <textarea readonly id="romajiOutput" rows="2"></textarea>
+
+  <label for="kanjiOnlyOutput">Kanji Only:</label>
+  <textarea readonly id="kanjiOnlyOutput" rows="2"></textarea>
+
+  <!-- External JS library -->
+  <script src="https://unpkg.com/wanakana"></script>
+
+  <script>
+    // Embedded JavaScript here
+
+    function extractKanji(text) {
+      return text.split('').filter(char => /[\u3400-\u4DBF\u4E00-\u9FFF]/.test(char)).join('');
+    }
+
+    async function translateText() {
+      const input = document.getElementById("englishInput").value;
+      if (!input.trim()) return;
+
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ja&dt=t&q=${encodeURIComponent(input)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const translated = data[0].map(part => part[0]).join("");
+
+        document.getElementById("kanjiOutput").value = translated;
+
+        const hiragana = wanakana.toHiragana(translated);
+        const katakana = wanakana.toKatakana(translated);
+        const romaji = wanakana.toRomaji(translated);
+        const kanjiOnly = extractKanji(translated);
+
+        document.getElementById("hiraganaOutput").value = hiragana;
+        document.getElementById("katakanaOutput").value = katakana;
+        document.getElementById("romajiOutput").value = romaji;
+        document.getElementById("kanjiOnlyOutput").value = kanjiOnly;
+      } catch (err) {
+        alert("Translation failed. Try again.");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
